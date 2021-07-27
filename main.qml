@@ -13,6 +13,7 @@ Window {
         id: resultScreen
         anchors.top: parent.top
         anchors.bottom: fullKeypadFunctionButton.top
+        mainResultValue: calculator.mainResult.toString()
     }
 
     FunctionButton{
@@ -138,11 +139,13 @@ Window {
                 height: parent.height / 6
                 color: (modelData=="=")?( containMouse?(pressed ? "#0178D7" : "#036FC4"): "#104066" ): containMouse?(pressed ? "#d6d6d6" : "#737373") : (pressed ? "#d6d6d6" : "#111111")
                 text: modelData
-                onClicked: resultScreen.mainResultValue = eventName
+                onClicked: {
+                    calculator.addElementToExpression(eventName)
+                }
                 property string eventName: {
                     switch (text) {
-                    case ".": return "POINT"
-                    case "C": return "C"
+//                    case "X": return "*"
+//                    case "÷": return "/"
                     default: return text
                     }
                 }

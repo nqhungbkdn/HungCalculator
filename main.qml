@@ -14,6 +14,8 @@ Window {
         anchors.top: parent.top
         anchors.bottom: fullKeypadFunctionButton.top
         mainResultValue: calculator.mainResult.toString()
+        historyExpressionValue: calculator.historyExpression.toString()
+        binResultValue: calculator.binResult.toString()
     }
 
     FunctionButton{
@@ -35,6 +37,13 @@ Window {
         width: (parent.width-150)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: fullKeypadFunctionButton.right
+        Image{
+            property real imageRatio: sourceSize.height/sourceSize.width
+            height: parent.height - 10
+            width: height/imageRatio
+            anchors.centerIn: parent
+            source: "icon/bitToggleIcon.png"
+        }
     }
 
     FunctionButton{
@@ -43,11 +52,13 @@ Window {
         anchors.bottom: fullKeypadWindows.top
         anchors.left: bitTogglingKeypadFunctionButton.right
         Text{
+            id: txtChangeTypeButton
             anchors.centerIn: parent
             font.pixelSize: 20
-            text: "QWORD"
+            text: calculator.typeOfData
             color: "white"
         }
+        onFunctionButtonClicked: calculator.onChangeTypeFunctionButtonClicked();
     }
 
     FunctionButton{
@@ -83,6 +94,11 @@ Window {
         height: mainWindow.height/2
         color: "#494949"
         anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 5
+        anchors.rightMargin: 5
+        anchors.bottomMargin: 5
 
         //        Rectangle{
         //            id: bitWise
@@ -131,21 +147,20 @@ Window {
 
         Repeater{
             id: digits
-            model: ["Lsh", "Rsh", "Or", "Xor", "Not", "And", "↑", "Mod", "CE", "C", "⌫", "÷", "A", "B", "7", "8", "9", "X", "C", "D", "4", "5", "6", "-", "E", "F", "1", "2", "3", "+", "(", ")", "+/-", "0", ".", "="]
+            model: ["Lsh", "Rsh", "Or", "Xor", "Not", "And", "↑", "Mod", "CE", "C", "⌫", "÷", "A", "B", "7", "8", "9", "×", "C", "D", "4", "5", "6", "-", "E", "F", "1", "2", "3", "+", "(", ")", "±", "0", ".", "="]
             KeypadButton {
                 x: (index % 6) * width
                 y: Math.floor(index / 6) * height
                 width: parent.width / 6
                 height: parent.height / 6
-                color: (modelData=="=")?( containMouse?(pressed ? "#0178D7" : "#036FC4"): "#104066" ): containMouse?(pressed ? "#d6d6d6" : "#737373") : (pressed ? "#d6d6d6" : "#111111")
+                color: (modelData=="=")?( containMouse?(pressed ? "#0178D7" : "#036FC4"): "#104066" ):(modelData==".")?("#111111") : (containMouse?(pressed ? "#d6d6d6" : "#737373") : (pressed ? "#d6d6d6" : "#111111"))
+                border.color: (modelData==".")?("#1B1B1B") : containMouse?"white":"#1B1B1B"
                 text: modelData
                 onClicked: {
-                    calculator.addElementToExpression(eventName)
+                    calculator.onKeypadButtonClicked(eventName)
                 }
                 property string eventName: {
                     switch (text) {
-//                    case "X": return "*"
-//                    case "÷": return "/"
                     default: return text
                     }
                 }

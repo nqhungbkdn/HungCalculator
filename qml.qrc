@@ -6,5 +6,6 @@
         <file>ResultScreen.qml</file>
         <file>icon/dial-pad_backup.png</file>
         <file>icon/fullKeypadIcon.png</file>
+        <file>icon/bitToggleIcon.png</file>
     </qresource>
 </RCC>

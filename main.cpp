@@ -11,9 +11,6 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-
-    //qDebug() << _calculator.calculate("1*2+3/7*((2+5)*99+14)");
-
     QQmlApplicationEngine engine;
     QQmlContext *m_qmlContext = engine.rootContext();
     m_qmlContext->setContextProperty("calculator", Calculator::getInstance());

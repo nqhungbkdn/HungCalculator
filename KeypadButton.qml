@@ -5,12 +5,11 @@ Rectangle{
     signal clicked
     property alias text: text.text
     border.width: 2
-    border.color: mouse.containsMouse?"white":"#1B1B1B"
+    //border.color: mouse.containsMouse?"white":"#1B1B1B"
     property real textHeight: height - 2
     property real fontHeight: 0.5
     property bool pressed: mouse.pressed
     property bool containMouse: mouse.containsMouse
-
     Text {
         id: text
         anchors.left: parent.left

@@ -3,6 +3,7 @@ import QtQuick 2.0
 Rectangle{
     width: parent.width
     property int subResultHeight: 30
+    property int subResultTextSize: 18
     property string hexResultValue : "0"
     property string decResultValue : "0"
     property string octResultValue : "0"
@@ -59,8 +60,16 @@ Rectangle{
         anchors.bottom: decResult.top
         anchors.leftMargin: 10
         Text{
-            font.pixelSize: 20
-            text: "HEX    " + hexResultValue
+            id: hexText
+            font.pixelSize: resultScreen.subResultTextSize
+            text: "HEX"
+            color: "white"
+        }
+        Text{
+            anchors.left: hexText.right
+            anchors.leftMargin: 25
+            font.pixelSize: resultScreen.subResultTextSize
+            text: hexResultValue
             color: "white"
         }
     }
@@ -74,8 +83,16 @@ Rectangle{
         anchors.bottom: octResult.top
         anchors.leftMargin: 10
         Text{
-            font.pixelSize: 20
-            text: "DEC    " + decResultValue
+            id: decText
+            font.pixelSize: resultScreen.subResultTextSize
+            text: "DEC"
+            color: "white"
+        }
+        Text{
+            anchors.left: decText.right
+            anchors.leftMargin: 25
+            font.pixelSize: resultScreen.subResultTextSize
+            text: decResultValue
             color: "white"
         }
     }
@@ -89,8 +106,16 @@ Rectangle{
         anchors.bottom: binResult.top
         anchors.leftMargin: 10
         Text{
-            font.pixelSize: 20
-            text: "OCT    " + octResultValue
+            id: octText
+            font.pixelSize: resultScreen.subResultTextSize
+            text: "OCT"
+            color: "white"
+        }
+        Text{
+            anchors.left: octText.right
+            anchors.leftMargin: 23
+            font.pixelSize: resultScreen.subResultTextSize
+            text: octResultValue
             color: "white"
         }
     }
@@ -98,16 +123,27 @@ Rectangle{
     Rectangle{
         id: binResult
         width: parent.width
-        height: subResultHeight
+        height: 40
         color: parent.color
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.leftMargin: 10
         Text{
-            font.pixelSize: 20
-            text: "BIN     " + binResultValue
+            id: binText
+            font.pixelSize: resultScreen.subResultTextSize
+            text: "BIN"
             color: "white"
         }
+        Text{
+            anchors.left: binText.right
+            anchors.leftMargin: 28
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            font.pixelSize: resultScreen.subResultTextSize
+            text: binResultValue
+            color: "white"
+            wrapMode: Text.WordWrap
+        }
     }
-
 }

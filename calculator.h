@@ -12,7 +12,7 @@ class Calculator: public QObject
     Q_OBJECT
     Q_PROPERTY(QString mainResult READ mainResult WRITE setMainResult NOTIFY mainResultChanged)
     Q_PROPERTY(QString historyExpression READ historyExpression WRITE setHistoryExpression NOTIFY historyExpressionChanged)
-    Q_PROPERTY(QString typeOfData READ typeOfData WRITE setTypeOfData NOTIFY typeOfDataChanged)
+    Q_PROPERTY(QString sizeOfData READ sizeOfData WRITE setSizeOfData NOTIFY sizeOfDataChanged)
     Q_PROPERTY(QString hexResult READ hexResult WRITE setHexResult NOTIFY hexResultChanged)
     Q_PROPERTY(QString decResult READ decResult WRITE setDecResult NOTIFY decResultChanged)
     Q_PROPERTY(QString octResult READ octResult WRITE setOctResult NOTIFY octResultChanged)
@@ -22,7 +22,7 @@ class Calculator: public QObject
 signals:
     void mainResultChanged(QString mainResult);
     void historyExpressionChanged(QString mainResult);
-    void typeOfDataChanged(QString typeOfData);
+    void sizeOfDataChanged(QString sizeOfData);
     void hexResultChanged(QString hexResult);
     void decResultChanged(QString decResult);
     void octResultChanged(QString octResult);
@@ -30,6 +30,7 @@ signals:
 public:
     int checkPriority(QChar _element);
     bool isNumber(QChar _element);
+    bool isOperator(QChar _element);
     QString convertInfixToPostFix(QString _expression);
     QString convertSymbolCharacterToOperator(QString _symbolCharacter);
     int calculate(QString _expression);
@@ -42,10 +43,10 @@ public:
     void setMainResult(const QString &_mainResult);
     QString historyExpression() const;
     void setHistoryExpression(const QString &_historyExpression);
-    QString typeOfData() const;
-    void setTypeOfData(const QString &_typeOfData);
+    QString sizeOfData() const;
+    void setSizeOfData(const QString &_sizeOfData);
 
-    Q_INVOKABLE void onChangeTypeFunctionButtonClicked();
+    Q_INVOKABLE void onChangeSizeOfDataFunctionButtonClicked();
 
     QString convertDecimalToBinary(QString _decimalString);
     QString convertBinaryToHex(QString _binaryString);
@@ -65,7 +66,6 @@ public:
     void connectSignalsToSlots();
 
 
-
 private:
     Calculator();
     ~Calculator();
@@ -75,11 +75,12 @@ private:
     QString m_mainResult;
     QString m_historyExpression;
     QString m_lastOperator;
-    QString m_typeOfData;
+    QString m_sizeOfData;
     QString m_binResult;
     QString m_hexResult;
     QString m_octResult;
     QString m_decResult;
+    bool m_isCalculated;
 };
 
 #endif // CALCULATORCLASS_H

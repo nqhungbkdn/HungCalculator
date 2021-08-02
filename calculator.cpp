@@ -6,13 +6,14 @@ Calculator::Calculator()
     m_lastOperator ="+";
     m_historyExpression = "";
     m_mainResult = "0";
-    m_typeOfData = "QWORD";
+    m_sizeOfData = "QWORD";
     m_expressionForCalculate = "";
     m_expressionForDisplay = "";
     m_decResult = "0";
     m_octResult = "0";
     m_hexResult = "0";
     m_binResult = "0";
+    m_isCalculated = false;
 }
 
 Calculator::~Calculator()
@@ -22,10 +23,14 @@ Calculator::~Calculator()
 
 int Calculator::checkPriority(QChar _element)
 {
-    if(_element == '+' || _element == '-')
+    if(_element == '|' || _element == '^')
         return 1;
-    if(_element == '*' || _element == '/' || _element == '%')
+    if(_element == '&')
         return 2;
+    if(_element == '+' || _element == '-')
+        return 3;
+    if(_element == '*' || _element == '/' || _element == '%' || _element == '<' || _element == '>')
+        return 4;
     return 0;
 }
 
@@ -34,14 +39,20 @@ bool Calculator::isNumber(QChar _element)
     return ((_element >= '0' && _element <= '9'));
 }
 
+bool Calculator::isOperator(QChar _element)
+{
+    return(_element=="+" || _element=="-" || _element=="*" || _element=="/" || _element=="&" || _element=="|" || _element=="^" || _element=="<" || _element==">");
+}
+
 QString Calculator::convertInfixToPostFix(QString _expression)
 {
+    qDebug() << Q_FUNC_INFO;
     qDebug() << "Infix: " << _expression;
     QString result ="";
     QStack<QChar> convertStack;
     for (int index = 0; index < _expression.length(); index++)
     {
-        if (_expression[index] == '+' || _expression[index] == '-' || _expression[index] == '/' || _expression[index] == '*' || _expression[index] == '%')
+        if (_expression[index] == '+' || _expression[index] == '-' || _expression[index] == '/' || _expression[index] == '*' || _expression[index] == '%' || _expression[index] == '<' || _expression[index] == '>' || _expression[index] == '&' || _expression[index] == '|' || _expression[index] == '^' || _expression[index] == '!')
         {
             if(!convertStack.empty())
             {
@@ -101,12 +112,25 @@ QString Calculator::convertSymbolCharacterToOperator(QString _symbolCharacter)
         return "/";
     if(_symbolCharacter == "Mod")
         return "%";
+    if(_symbolCharacter == "Lsh")
+        return "<";
+    if(_symbolCharacter == "Rsh")
+        return ">";
+    if(_symbolCharacter == "And")
+        return "&";
+    if(_symbolCharacter == "Or")
+        return "|";
+    if(_symbolCharacter == "Xor")
+        return "^";
+    if(_symbolCharacter == "Not")
+        return "!";
 
     return _symbolCharacter;
 }
 
 int Calculator::calculate(QString _expression)
 {
+    qDebug() << Q_FUNC_INFO;
     QString PostfixExpression = convertInfixToPostFix(_expression);
     QStack<int> calculateStack;
     int operand1, operand2;
@@ -143,6 +167,36 @@ int Calculator::calculate(QString _expression)
             operand2 = calculateStack.pop();
             calculateStack.push(operand1 + operand2);
         }
+        else if(PostfixExpression[index]=='<')
+        {
+            operand1 = calculateStack.pop();
+            operand2 = calculateStack.pop();
+            calculateStack.push(operand2 << operand1);
+        }
+        else if(PostfixExpression[index]=='>')
+        {
+            operand1 = calculateStack.pop();
+            operand2 = calculateStack.pop();
+            calculateStack.push(operand2 >> operand1);
+        }
+        else if(PostfixExpression[index]=='&')
+        {
+            operand1 = calculateStack.pop();
+            operand2 = calculateStack.pop();
+            calculateStack.push(operand2 & operand1);
+        }
+        else if(PostfixExpression[index]=='|')
+        {
+            operand1 = calculateStack.pop();
+            operand2 = calculateStack.pop();
+            calculateStack.push(operand2 | operand1);
+        }
+        else if(PostfixExpression[index]=='^')
+        {
+            operand1 = calculateStack.pop();
+            operand2 = calculateStack.pop();
+            calculateStack.push(operand2 ^ operand1);
+        }
         else{
             if(isNumber(PostfixExpression[index]))
             {
@@ -169,6 +223,10 @@ Calculator *Calculator::getInstance()
 
 void Calculator::onDigitKeypadButtonCliked(QString _element)
 {
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << "Digit button clicked:" << _element;
+    if(m_mainResult=="0" && _element == "0")
+        return;
     m_expressionForCalculate += _element;
     m_expressionForDisplay+=_element;
     int startIndexOfNumber = m_expressionForDisplay.length()-1;
@@ -181,15 +239,19 @@ void Calculator::onDigitKeypadButtonCliked(QString _element)
     QStringRef temp(&m_expressionForDisplay, startIndexOfNumber+1,m_expressionForDisplay.length()-startIndexOfNumber-1);
     setMainResult(temp.toString());
     setSubResult(m_mainResult);
+    m_isCalculated = false;
 }
 
 void Calculator::onOperatorKeypadButtonClicked(QString _element)
 {
-    if(_element=="C")
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << "Operator button clicked:" << _element;
+    if(_element=="Clear")
     {
         m_expressionForCalculate = "";
         m_expressionForDisplay = "";
         setMainResult("0");
+        setSubResult("0");
         setHistoryExpression("");
         return;
     }
@@ -206,30 +268,49 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
             if(m_expressionForDisplay.isEmpty())
             {
                 setMainResult("0");
+                setSubResult("0");
                 return;
             }
         }
         setMainResult("0");
+        setSubResult("0");
         return;
     }
 
     if(_element == "⌫")
     {
-        if(m_mainResult.length()==1 && m_mainResult[0] == "0")
+        if((m_mainResult.length()==1 && m_mainResult[0] == "0") || !m_expressionForCalculate.back().isNumber() || m_isCalculated == true)
             return;
         m_expressionForCalculate.chop(1);
         m_expressionForDisplay.chop(1);
+        if(m_mainResult.length()>1)
+        {
+            setMainResult(m_mainResult.left(m_mainResult.length()-1));
+            setSubResult(m_mainResult);
+        }
+        else
+        {
+            setMainResult("0");
+            setSubResult("0");
+        }
     }
 
     QString elementAfterConvert = convertSymbolCharacterToOperator(_element);
 
-
     if(elementAfterConvert == "=") // "=" button clicked
     {
+        if(m_expressionForCalculate.isEmpty())
+            return;
+        if(isOperator(m_expressionForCalculate.back()))
+        {
+            m_expressionForCalculate.append(m_mainResult);
+            m_expressionForDisplay.append(m_mainResult);
+        }
         int resultOfCalculate = calculate(m_expressionForCalculate);
         setMainResult(QString::number(resultOfCalculate));
         setSubResult(m_mainResult);
         setHistoryExpression("");
+        m_isCalculated = true;
         if(resultOfCalculate < 0)
         {
             m_expressionForCalculate = "0" + QString::number(resultOfCalculate);
@@ -241,30 +322,59 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
             m_expressionForCalculate = QString::number(resultOfCalculate);
         }
     }
-    else
+    else if(elementAfterConvert == "+"||elementAfterConvert == "-"||elementAfterConvert == "*"||elementAfterConvert == "/" ||elementAfterConvert == "%" ||elementAfterConvert == "<" || elementAfterConvert == ">" || elementAfterConvert == "&" || elementAfterConvert == "|" || elementAfterConvert == "^")
     {
-
-        if(m_expressionForCalculate.back()=="+" || m_expressionForCalculate.back()=="-" || m_expressionForCalculate.back()=="*" || m_expressionForCalculate.back()=="/")
+        if(m_expressionForCalculate.isEmpty()||m_expressionForCalculate.back()=='(')
         {
-            if(m_expressionForCalculate.isEmpty())
-                m_expressionForCalculate.append("0");
-            if(elementAfterConvert==m_expressionForCalculate.back())
+            m_expressionForCalculate.append("0");
+            m_expressionForDisplay.append("0");
+        }
+        if(m_expressionForCalculate.back()=="+" || m_expressionForCalculate.back()=="-" || m_expressionForCalculate.back()=="*" || m_expressionForCalculate.back()=="/" || m_expressionForCalculate.back()=="%" || m_expressionForCalculate.back()=="<" || m_expressionForCalculate.back()==">" || m_expressionForCalculate.back()=="&" || m_expressionForCalculate.back()=="|" || m_expressionForCalculate.back()=="^")
+        {
+            if(elementAfterConvert == m_expressionForCalculate.back())
             {
                 return;
             }
             m_expressionForCalculate.chop(1);
-            m_expressionForDisplay.chop(1);
+            m_expressionForDisplay.remove(m_expressionForDisplay.lastIndexOf(m_lastOperator),m_lastOperator.length());
         }
         m_expressionForCalculate += elementAfterConvert;
-        m_expressionForDisplay+=_element;
+        m_expressionForDisplay += _element;
         setHistoryExpression(m_expressionForDisplay);
-        if(checkPriority(elementAfterConvert[0]) <= checkPriority(m_lastOperator[0]))
+        if(checkPriority(elementAfterConvert[0]) <= checkPriority(convertSymbolCharacterToOperator(m_lastOperator)[0]))
         {
             QStringRef temp(&m_expressionForCalculate, 0, m_expressionForCalculate.length()-1);
             setMainResult(QString::number(calculate(temp.toString())));
-            //setBinResult(convertDecimalToBinary(m_mainResult));
+            setSubResult(m_mainResult);
+            m_isCalculated = true;
         }
-        m_lastOperator = elementAfterConvert;
+        m_lastOperator = _element;
+    }
+    else if(elementAfterConvert == '(')
+    {
+        m_expressionForCalculate+=elementAfterConvert;
+        m_expressionForDisplay+=elementAfterConvert;
+        setHistoryExpression(m_expressionForDisplay);
+    }
+    else if(elementAfterConvert == ')')
+    {
+        if(m_expressionForCalculate.count('(')== m_expressionForCalculate.count(')'))
+            return;
+        if(m_expressionForCalculate.back()=='(')
+        {
+            m_expressionForCalculate.append("0");
+            m_expressionForDisplay.append("0");
+        }
+        if(isOperator(m_expressionForCalculate.back()))
+        {
+            m_expressionForCalculate.append(m_mainResult);
+            m_expressionForDisplay.append(m_mainResult);
+        }
+        m_expressionForCalculate.append(elementAfterConvert);
+        m_expressionForDisplay.append(elementAfterConvert);
+        setHistoryExpression(m_expressionForDisplay);
+        setMainResult(QString::number(calculate(m_expressionForCalculate)));
+        setSubResult(m_mainResult);
     }
 }
 
@@ -294,43 +404,44 @@ void Calculator::setHistoryExpression(const QString &_historyExpression)
     emit historyExpressionChanged(m_historyExpression);
 }
 
-QString Calculator::typeOfData() const
+QString Calculator::sizeOfData() const
 {
-    return m_typeOfData;
+    return m_sizeOfData;
 }
 
-void Calculator::setTypeOfData(const QString &_typeOfData)
+void Calculator::setSizeOfData(const QString &_sizeOfData)
 {
-    if(_typeOfData==m_typeOfData)
+    if(_sizeOfData==m_sizeOfData)
         return;
-    m_typeOfData = _typeOfData;
-    emit typeOfDataChanged(m_typeOfData);
+    m_sizeOfData = _sizeOfData;
+    emit sizeOfDataChanged(m_sizeOfData);
 }
 
-void Calculator::onChangeTypeFunctionButtonClicked()
+void Calculator::onChangeSizeOfDataFunctionButtonClicked()
 {
-    if(m_typeOfData=="BYTE")
-        setTypeOfData("QWORD");
-    else if(m_typeOfData=="QWORD")
-        setTypeOfData("DWORD");
-    else if(m_typeOfData=="DWORD")
-        setTypeOfData("WORD");
-    else if(m_typeOfData=="WORD")
-        setTypeOfData("BYTE");
+    if(m_sizeOfData=="BYTE")
+        setSizeOfData("QWORD");
+    else if(m_sizeOfData=="QWORD")
+        setSizeOfData("DWORD");
+    else if(m_sizeOfData=="DWORD")
+        setSizeOfData("WORD");
+    else if(m_sizeOfData=="WORD")
+        setSizeOfData("BYTE");
 }
 
 QString Calculator::convertDecimalToBinary(QString _decimalString)
 {
+    qDebug() << Q_FUNC_INFO;
     // Need to handle negative number!
     QString PositiveBinaryString;
     bool isNegative = false;
-    int decimal = _decimalString.toInt();
+    long long decimal = _decimalString.toLongLong();
+    qDebug() << "decimal: " <<decimal ;
     if(decimal<0)
     {
         isNegative = true;
         decimal = - decimal;
     }
-    qDebug() << "decimal: " <<decimal ;
     while(decimal > 0)
     {
         PositiveBinaryString.prepend(QString::number(decimal%2));
@@ -341,14 +452,13 @@ QString Calculator::convertDecimalToBinary(QString _decimalString)
         PositiveBinaryString.prepend("0");
     }
 
-    for(int index = PositiveBinaryString.length()-1; index>0; index --)
-    {
-        if(index%4==0)
-            PositiveBinaryString.insert(index," ");
-    }
-
     if(isNegative == false)
     {
+        for(int index = PositiveBinaryString.length()-1; index>0; index --)
+        {
+            if(index%4==0)
+                PositiveBinaryString.insert(index," ");
+        }
         qDebug() << "Positive binary: " << PositiveBinaryString;
         return PositiveBinaryString;
     }
@@ -363,17 +473,11 @@ QString Calculator::convertDecimalToBinary(QString _decimalString)
                 PositiveBinaryString[index] ='1';
             else if(PositiveBinaryString[index] == '1')
                 PositiveBinaryString[index] = '0';
-            else {
-                PositiveBinaryString[index] = ' ';
-            }
         }
         qDebug() << "Ngich dao: " << PositiveBinaryString;
         for(int index = 0; index < PositiveBinaryString.length() -1; index++)
         {
-            if(PositiveBinaryString[index] == ' ')
-                makeUpBinaryString.append(' ');
-            else
-                makeUpBinaryString.append('0');
+            makeUpBinaryString.append('0');
         }
         makeUpBinaryString.append('1');
 
@@ -401,10 +505,6 @@ QString Calculator::convertDecimalToBinary(QString _decimalString)
                     negativeBinaryString.prepend('1');
                     carry = '1';
                 }
-                else
-                {
-                    negativeBinaryString.prepend(' ');
-                }
             }
             else
             {
@@ -419,7 +519,13 @@ QString Calculator::convertDecimalToBinary(QString _decimalString)
                     carry = '1';
                 }
             }
-            qDebug() << "result*: " << negativeBinaryString;
+        }
+        while(negativeBinaryString.length()<64)
+            negativeBinaryString.prepend('1');
+        for(int index = negativeBinaryString.length()-1; index>0; index--)
+        {
+            if(index%4==0)
+                negativeBinaryString.insert(index," ");
         }
         qDebug() << "result: " << negativeBinaryString;
         return negativeBinaryString;
@@ -428,6 +534,7 @@ QString Calculator::convertDecimalToBinary(QString _decimalString)
 
 QString Calculator::convertBinaryToHex(QString _binaryString)
 {
+    qDebug() << Q_FUNC_INFO;
     QString hexString;
     QString binaryString = _binaryString;
     qDebug() << "binaryString: " << binaryString;
@@ -435,7 +542,6 @@ QString Calculator::convertBinaryToHex(QString _binaryString)
 
     for(int index = 0; index < binaryString.length()-1; index+=4)
     {
-        qDebug() << "binaryString.mid(index,4): " << binaryString.mid(index,4);
         if(binaryString.mid(index,4) == "0000")
             hexString.append('0');
         else if(binaryString.mid(index,4) == "0001")
@@ -472,7 +578,7 @@ QString Calculator::convertBinaryToHex(QString _binaryString)
 
     for(int index = hexString.length() - 4; index>0; index-=4)
     {
-            hexString.insert(index," ");
+        hexString.insert(index," ");
     }
     qDebug() << "hexString: " << hexString;
     return hexString;
@@ -480,6 +586,7 @@ QString Calculator::convertBinaryToHex(QString _binaryString)
 
 QString Calculator::convertBinaryToOctal(QString _binaryString)
 {
+    qDebug() << Q_FUNC_INFO;
     QString octalString;
     QString binaryString = _binaryString;
     qDebug() << "binaryString: " << binaryString;
@@ -513,7 +620,7 @@ QString Calculator::convertBinaryToOctal(QString _binaryString)
     }
     for(int index = octalString.length() - 3; index>0; index-=3)
     {
-            octalString.insert(index," ");
+        octalString.insert(index," ");
     }
     qDebug() << "octalString: " << octalString;
     return octalString;
@@ -573,8 +680,24 @@ void Calculator::setBinResult(QString _binResult)
 
 void Calculator::setSubResult(QString _decimalString)
 {
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << "decimal: " << _decimalString;
+    if(_decimalString=="0")
+    {
+        setHexResult("0");
+        setDecResult("0");
+        setOctResult("0");
+        setBinResult("0");
+        return;
+    }
     setDecResult(_decimalString);
-    setBinResult(convertDecimalToBinary(_decimalString));
-    setHexResult(convertBinaryToHex(convertDecimalToBinary(_decimalString)));
-    setOctResult(convertBinaryToOctal(convertDecimalToBinary(_decimalString)));
+    QString binaryString = convertDecimalToBinary(_decimalString);
+    setBinResult(binaryString);
+    setHexResult(convertBinaryToHex(binaryString));
+    setOctResult(convertBinaryToOctal(binaryString));
+}
+
+void Calculator::connectSignalsToSlots()
+{
+    connect(this, SIGNAL(mainResultChanged(m_mainResult)), this, SLOT(setSubResult()));
 }

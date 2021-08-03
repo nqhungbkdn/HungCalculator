@@ -103,7 +103,6 @@ Window {
         anchors.rightMargin: 5
         anchors.bottomMargin: 5
 
-
         Repeater{
             id: digits
             model: ["Lsh", "Rsh", "Or", "Xor", "Not", "And", "↑", "Mod", "CE", "Clear", "⌫", "÷", "A", "B", "7", "8", "9", "×", "C", "D", "4", "5", "6", "-", "E", "F", "1", "2", "3", "+", "(", ")", "±", "0", ".", "="]
@@ -116,7 +115,7 @@ Window {
                 border.color: (modelData==".")?("#1B1B1B") : containMouse?"white":"#1B1B1B"
                 text: (modelData == "Clear")? "C" : modelData
                 textcolor: (modelData=="." || modelData=="A"|| modelData=="B"|| modelData=="C" || modelData=="D" || modelData=="E" || modelData=="F")? "#505050": "white"
-                enabled: ((modelData<='9'&& modelData>= '0') || modelData == '+' || modelData == '-' || modelData == '×' || modelData == '÷' || modelData == 'Mod' || modelData == '⌫' || modelData == 'Clear' || modelData == 'CE'|| modelData == '(' || modelData == ')' || modelData == '=' || modelData == 'Lsh' || modelData == 'Rsh' || modelData == 'And' || modelData == 'Or' || modelData == 'Xor')? true : false
+                enabled: ((modelData<='9'&& modelData>= '0') || modelData == '+' || modelData == '-' || modelData == '×' || modelData == '÷' || modelData == 'Mod' || modelData == '⌫' || modelData == 'Clear' || modelData == 'CE'|| modelData == '(' || modelData == ')' || modelData == '=' || modelData == 'Lsh' || modelData == 'Rsh' || modelData == 'And' || modelData == 'Or' || modelData == 'Xor' || modelData == 'Not')? true : false
                 onClicked: {
                     if(modelData<='9'&& modelData>= '0')
                         calculator.onDigitKeypadButtonCliked(modelData)
@@ -127,12 +126,12 @@ Window {
         }
     }
 
-//        Rectangle{
-//            id: bitTogglingKeypadWindows
-//            width: mainWindow.width
-//            height: mainWindow.height/2
-//            color: "blue"
-//            anchors.bottom: parent.bottom
-//            visible: false
-//        }
+    //        Rectangle{
+    //            id: bitTogglingKeypadWindows
+    //            width: mainWindow.width
+    //            height: mainWindow.height/2
+    //            color: "blue"
+    //            anchors.bottom: parent.bottom
+    //            visible: false
+    //        }
 }

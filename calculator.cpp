@@ -14,6 +14,7 @@ Calculator::Calculator()
     m_hexResult = "0";
     m_binResult = "0";
     m_isCalculated = false;
+    m_isEquaButtonlPressed = false;
 }
 
 Calculator::~Calculator()
@@ -31,6 +32,8 @@ int Calculator::checkPriority(QChar _element)
         return 3;
     if(_element == '*' || _element == '/' || _element == '%' || _element == '<' || _element == '>')
         return 4;
+    if(_element == "~")
+        return 5;
     return 0;
 }
 
@@ -52,7 +55,7 @@ QString Calculator::convertInfixToPostFix(QString _expression)
     QStack<QChar> convertStack;
     for (int index = 0; index < _expression.length(); index++)
     {
-        if (_expression[index] == '+' || _expression[index] == '-' || _expression[index] == '/' || _expression[index] == '*' || _expression[index] == '%' || _expression[index] == '<' || _expression[index] == '>' || _expression[index] == '&' || _expression[index] == '|' || _expression[index] == '^' || _expression[index] == '!')
+        if (_expression[index] == '+' || _expression[index] == '-' || _expression[index] == '/' || _expression[index] == '*' || _expression[index] == '%' || _expression[index] == '<' || _expression[index] == '>' || _expression[index] == '&' || _expression[index] == '|' || _expression[index] == '^' || _expression[index] == '~')
         {
             if(!convertStack.empty())
             {
@@ -123,12 +126,12 @@ QString Calculator::convertSymbolCharacterToOperator(QString _symbolCharacter)
     if(_symbolCharacter == "Xor")
         return "^";
     if(_symbolCharacter == "Not")
-        return "!";
+        return "~";
 
     return _symbolCharacter;
 }
 
-int Calculator::calculate(QString _expression)
+QString Calculator::calculate(QString _expression)
 {
     qDebug() << Q_FUNC_INFO;
     QString PostfixExpression = convertInfixToPostFix(_expression);
@@ -147,6 +150,10 @@ int Calculator::calculate(QString _expression)
         {
             operand1 = calculateStack.pop();
             operand2 = calculateStack.pop();
+            if(operand1 == 0)
+            {
+                return "Cannot divide by zero";
+            }
             calculateStack.push(operand2 / operand1);
         }
         else if(PostfixExpression[index]=='%')
@@ -197,6 +204,11 @@ int Calculator::calculate(QString _expression)
             operand2 = calculateStack.pop();
             calculateStack.push(operand2 ^ operand1);
         }
+        else if(PostfixExpression[index] == '~')
+        {
+            operand1 = calculateStack.pop();
+            calculateStack.push(~operand1);
+        }
         else{
             if(isNumber(PostfixExpression[index]))
             {
@@ -208,8 +220,7 @@ int Calculator::calculate(QString _expression)
             }
         }
     }
-    qDebug() << "result of Calculate: " << calculateStack.top();
-    return calculateStack.top();
+    return QString::number(calculateStack.top());
 }
 
 Calculator *Calculator::getInstance()
@@ -227,6 +238,11 @@ void Calculator::onDigitKeypadButtonCliked(QString _element)
     qDebug() << "Digit button clicked:" << _element;
     if(m_mainResult=="0" && _element == "0")
         return;
+    if(m_isEquaButtonlPressed)
+    {
+        m_expressionForCalculate = "";
+        m_expressionForDisplay = "";
+    }
     m_expressionForCalculate += _element;
     m_expressionForDisplay+=_element;
     int startIndexOfNumber = m_expressionForDisplay.length()-1;
@@ -240,6 +256,7 @@ void Calculator::onDigitKeypadButtonCliked(QString _element)
     setMainResult(temp.toString());
     setSubResult(m_mainResult);
     m_isCalculated = false;
+    m_isEquaButtonlPressed = false;
 }
 
 void Calculator::onOperatorKeypadButtonClicked(QString _element)
@@ -306,24 +323,26 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
             m_expressionForCalculate.append(m_mainResult);
             m_expressionForDisplay.append(m_mainResult);
         }
-        int resultOfCalculate = calculate(m_expressionForCalculate);
-        setMainResult(QString::number(resultOfCalculate));
+        QString resultOfCalculate = calculate(m_expressionForCalculate);
+        setMainResult(resultOfCalculate);
         setSubResult(m_mainResult);
         setHistoryExpression("");
-        m_isCalculated = true;
-        if(resultOfCalculate < 0)
+        if(resultOfCalculate.toInt() < 0)
         {
-            m_expressionForCalculate = "0" + QString::number(resultOfCalculate);
-            m_expressionForDisplay = QString::number(resultOfCalculate);
+            m_expressionForCalculate = "0" + resultOfCalculate;
+            m_expressionForDisplay = resultOfCalculate;
         }
         else
         {
-            m_expressionForDisplay = QString::number(resultOfCalculate);
-            m_expressionForCalculate = QString::number(resultOfCalculate);
+            m_expressionForDisplay = resultOfCalculate;
+            m_expressionForCalculate = resultOfCalculate;
         }
+        m_isCalculated = true;
+        m_isEquaButtonlPressed = true;
     }
     else if(elementAfterConvert == "+"||elementAfterConvert == "-"||elementAfterConvert == "*"||elementAfterConvert == "/" ||elementAfterConvert == "%" ||elementAfterConvert == "<" || elementAfterConvert == ">" || elementAfterConvert == "&" || elementAfterConvert == "|" || elementAfterConvert == "^")
     {
+        m_isEquaButtonlPressed = false;
         if(m_expressionForCalculate.isEmpty()||m_expressionForCalculate.back()=='(')
         {
             m_expressionForCalculate.append("0");
@@ -344,14 +363,63 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
         if(checkPriority(elementAfterConvert[0]) <= checkPriority(convertSymbolCharacterToOperator(m_lastOperator)[0]))
         {
             QStringRef temp(&m_expressionForCalculate, 0, m_expressionForCalculate.length()-1);
-            setMainResult(QString::number(calculate(temp.toString())));
+            setMainResult(calculate(temp.toString()));
             setSubResult(m_mainResult);
             m_isCalculated = true;
         }
         m_lastOperator = _element;
     }
+    else if(elementAfterConvert == '~') // Bitwise Not operator
+    {
+        QString lastNumber;
+        if(!m_expressionForCalculate.isEmpty()) // Not empty
+        {
+            if(m_expressionForCalculate.back().isNumber())
+            {
+                while (m_expressionForCalculate.back().isNumber()) {
+                    lastNumber.prepend(m_expressionForCalculate.back());
+                    m_expressionForCalculate.chop(1);
+                    m_expressionForDisplay.chop(1);
+                    if(m_expressionForCalculate.isEmpty())
+                        break;
+                }
+            }
+            else if(isOperator(m_expressionForCalculate.back()))
+            {
+                lastNumber = m_mainResult;
+            }
+        }
+        else
+        {
+            lastNumber = m_mainResult;
+        }
+        m_expressionForDisplay = m_expressionForDisplay + "Not(" + lastNumber + ")";
+        m_expressionForCalculate = m_expressionForCalculate + elementAfterConvert + lastNumber;
+        setHistoryExpression(m_expressionForDisplay);
+        setMainResult(calculate(elementAfterConvert + lastNumber));
+    }
     else if(elementAfterConvert == '(')
     {
+        if(!m_expressionForCalculate.isEmpty()) // Not empty
+        {
+            if(m_expressionForCalculate.back().isNumber())
+            {
+                QString lastNumber;
+                while (m_expressionForCalculate.back().isNumber()) {
+                    lastNumber.prepend(m_expressionForCalculate.back());
+                    m_expressionForCalculate.chop(1);
+                    m_expressionForDisplay.chop(1);
+                    if(m_expressionForCalculate.isEmpty())
+                        break;
+                }
+                m_expressionForCalculate.append(elementAfterConvert);
+                m_expressionForDisplay.append(_element);
+                m_expressionForCalculate.append(lastNumber);
+                m_expressionForDisplay.append(lastNumber);
+                setHistoryExpression(m_expressionForDisplay);
+                return;
+            }
+        }
         m_expressionForCalculate+=elementAfterConvert;
         m_expressionForDisplay+=elementAfterConvert;
         setHistoryExpression(m_expressionForDisplay);
@@ -373,7 +441,7 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
         m_expressionForCalculate.append(elementAfterConvert);
         m_expressionForDisplay.append(elementAfterConvert);
         setHistoryExpression(m_expressionForDisplay);
-        setMainResult(QString::number(calculate(m_expressionForCalculate)));
+        setMainResult(calculate(m_expressionForCalculate));
         setSubResult(m_mainResult);
     }
 }
@@ -432,7 +500,6 @@ void Calculator::onChangeSizeOfDataFunctionButtonClicked()
 QString Calculator::convertDecimalToBinary(QString _decimalString)
 {
     qDebug() << Q_FUNC_INFO;
-    // Need to handle negative number!
     QString PositiveBinaryString;
     bool isNegative = false;
     long long decimal = _decimalString.toLongLong();
@@ -682,6 +749,14 @@ void Calculator::setSubResult(QString _decimalString)
 {
     qDebug() << Q_FUNC_INFO;
     qDebug() << "decimal: " << _decimalString;
+    if(_decimalString == "Cannot divide by zero")
+    {
+        setHexResult("");
+        setDecResult("");
+        setOctResult("");
+        setBinResult("");
+        return;
+    }
     if(_decimalString=="0")
     {
         setHexResult("0");

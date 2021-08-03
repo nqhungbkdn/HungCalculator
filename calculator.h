@@ -33,7 +33,7 @@ public:
     bool isOperator(QChar _element);
     QString convertInfixToPostFix(QString _expression);
     QString convertSymbolCharacterToOperator(QString _symbolCharacter);
-    int calculate(QString _expression);
+    QString calculate(QString _expression);
     static Calculator* getInstance();
     //Q_INVOKABLE void onKeypadButtonClicked(QString _element);
     Q_INVOKABLE void onDigitKeypadButtonCliked(QString _element);
@@ -65,7 +65,6 @@ public:
 
     void connectSignalsToSlots();
 
-
 private:
     Calculator();
     ~Calculator();
@@ -81,6 +80,7 @@ private:
     QString m_octResult;
     QString m_decResult;
     bool m_isCalculated;
+    bool m_isEquaButtonlPressed;
 };
 
 #endif // CALCULATORCLASS_H

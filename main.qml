@@ -23,30 +23,66 @@ Window {
 
     FunctionButton{
         id: fullKeypadFunctionButton
-        width: (parent.width-150)/4
+        width: (parent.width-175)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: parent.left
+        anchors.leftMargin: 5
+        //property alias fullKeypadFunctionButtonFooterVisible : footer.visible
+        //anchors.right: bitTogglingKeypadFunctionButton.left
+        //anchors.rightMargin: 5
         Image{
+            id: fullKeypadFunctionButtonImage
             property real imageRatio: sourceSize.height/sourceSize.width
             height: parent.height - 10
             width: height/imageRatio
             anchors.centerIn: parent
             source: "icon/fullKeypadIcon.png"
         }
+        //        Rectangle{
+        //            id: fullKeypadFunctionButtonFooter
+        //            width: parent.width
+        //            height: 5;
+        //            color: "#0178D7";
+        //            anchors.bottom: parent.bottom
+        //        }
+        //        onFunctionButtonClicked:
+        //        {
+        //            fullKeypadFunctionButtonFooter.visible = true
+        //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon_blue.png"
+        //            bitTogglingKeypadFunctionButtonFooter.visible = false
+        //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon.png"
+        //        }
     }
 
     FunctionButton{
         id: bitTogglingKeypadFunctionButton
-        width: (parent.width-150)/4
+        width: (parent.width-175)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: fullKeypadFunctionButton.right
+        anchors.leftMargin: 5
         Image{
+            id: bitTogglingKeypadFunctionButtonImage
             property real imageRatio: sourceSize.height/sourceSize.width
             height: parent.height - 10
             width: height/imageRatio
             anchors.centerIn: parent
             source: "icon/bitToggleIcon.png"
         }
+        //        Rectangle{
+        //            id: bitTogglingKeypadFunctionButtonFooter
+        //            width: parent.width
+        //            height: 5;
+        //            color: "#0178D7";
+        //            anchors.bottom: parent.bottom
+        //            visible: false
+        //        }
+        //        onFunctionButtonClicked:
+        //        {
+        //            fullKeypadFunctionButtonFooter.visible = false
+        //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon.png"
+        //            bitTogglingKeypadFunctionButtonFooter.visible = true
+        //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon_blue.png"
+        //        }
     }
 
     FunctionButton{
@@ -54,6 +90,7 @@ Window {
         width: 150
         anchors.bottom: fullKeypadWindows.top
         anchors.left: bitTogglingKeypadFunctionButton.right
+        anchors.leftMargin: 5
         onFunctionButtonClicked: calculator.onChangeSizeOfDataFunctionButtonClicked();
         Text{
             id: txtChangeSizeOfDataButton
@@ -66,7 +103,7 @@ Window {
 
     FunctionButton{
         id: msFunctionButton
-        width: (parent.width-150)/4
+        width: (parent.width-170)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: changeSizeOfDataFunctionButton.right
         Text{
@@ -79,7 +116,7 @@ Window {
 
     FunctionButton{
         id: mListFunctionButton
-        width: (parent.width-150)/4
+        width: (parent.width-170)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: msFunctionButton.right
         anchors.right: parent.right
@@ -119,19 +156,31 @@ Window {
                 onClicked: {
                     if(modelData<='9'&& modelData>= '0')
                         calculator.onDigitKeypadButtonCliked(modelData)
-                    else if(modelData =='+' || modelData == '-' || modelData == '×' || modelData == '÷' ||modelData == 'Mod' || modelData == '=' || modelData == '(' ||  modelData == ')' || modelData == 'Lsh' || modelData == 'Rsh' || modelData == 'And' || modelData == 'Or' || modelData == 'Xor' || modelData == 'Not' || modelData == 'Clear' || modelData == 'CE' || modelData == '⌫')
+                    else if(modelData =='+' || modelData == '-' || modelData == '×' || modelData == '÷' ||modelData == 'Mod' || modelData == '=' || modelData == '(' ||  modelData == ')' || modelData == 'Lsh' || modelData == 'Rsh' || modelData == 'And' || modelData == 'Or' || modelData == 'Xor' || modelData == 'Not')
                         calculator.onOperatorKeypadButtonClicked(modelData)
+                    else if(modelData == 'Clear' || modelData == 'CE' || modelData == '⌫')
+                        calculator.onDeleteButtonClicked(modelData)
                 }
             }
         }
     }
 
-    //        Rectangle{
-    //            id: bitTogglingKeypadWindows
-    //            width: mainWindow.width
-    //            height: mainWindow.height/2
-    //            color: "blue"
-    //            anchors.bottom: parent.bottom
-    //            visible: false
-    //        }
+    Rectangle{
+        id: memoryList
+        height: mainWindow.height/2 + 5
+        color: "red"
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: false
+    }
+
+    Rectangle{
+        id: bitTogglingKeypadWindows
+        width: mainWindow.width
+        height: mainWindow.height/2 + 5
+        color: "blue"
+        anchors.bottom: parent.bottom
+        visible: false
+    }
 }

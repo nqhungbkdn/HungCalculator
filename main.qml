@@ -1,6 +1,5 @@
-import QtQuick 2.9
+import QtQuick 2.11
 import QtQuick.Window 2.2
-
 Window {
     id: mainWindow
     visible: true
@@ -8,7 +7,7 @@ Window {
     height: 681
     title: qsTr("Hung's Calculator")
     color: "#525353"
-
+    opacity: 0.997
     ResultScreen{
         id: resultScreen
         anchors.top: parent.top
@@ -45,13 +44,15 @@ Window {
         //            color: "#0178D7";
         //            anchors.bottom: parent.bottom
         //        }
-        //        onFunctionButtonClicked:
-        //        {
-        //            fullKeypadFunctionButtonFooter.visible = true
-        //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon_blue.png"
-        //            bitTogglingKeypadFunctionButtonFooter.visible = false
-        //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon.png"
-        //        }
+        onFunctionButtonClicked:
+        {
+            //            fullKeypadFunctionButtonFooter.visible = true
+            //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon_blue.png"
+            //            bitTogglingKeypadFunctionButtonFooter.visible = false
+            //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon.png"
+            closeAllWindows()
+            fullKeypadWindows.visible = true;
+        }
     }
 
     FunctionButton{
@@ -76,13 +77,15 @@ Window {
         //            anchors.bottom: parent.bottom
         //            visible: false
         //        }
-        //        onFunctionButtonClicked:
-        //        {
-        //            fullKeypadFunctionButtonFooter.visible = false
-        //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon.png"
-        //            bitTogglingKeypadFunctionButtonFooter.visible = true
-        //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon_blue.png"
-        //        }
+        onFunctionButtonClicked:
+        {
+            //            fullKeypadFunctionButtonFooter.visible = false
+            //            fullKeypadFunctionButtonImage.source = "icon/fullKeypadIcon.png"
+            //            bitTogglingKeypadFunctionButtonFooter.visible = true
+            //            bitTogglingKeypadFunctionButtonImage.source = "icon/bitToggleIcon_blue.png"
+            closeAllWindows();
+            bitTogglingKeypadWindows.visible = true;
+        }
     }
 
     FunctionButton{
@@ -102,7 +105,7 @@ Window {
     }
 
     FunctionButton{
-        id: msFunctionButton
+        id: memoryStoreFunctionButton
         width: (parent.width-170)/4
         anchors.bottom: fullKeypadWindows.top
         anchors.left: changeSizeOfDataFunctionButton.right
@@ -112,19 +115,28 @@ Window {
             text: "MS"
             color: "white"
         }
+        onFunctionButtonClicked:
+        {
+            _memoryModel.addNewData(calculator.mainResult.toString())
+        }
     }
 
     FunctionButton{
-        id: mListFunctionButton
+        id: memoryListFunctionButton
         width: (parent.width-170)/4
         anchors.bottom: fullKeypadWindows.top
-        anchors.left: msFunctionButton.right
+        anchors.left: memoryStoreFunctionButton.right
         anchors.right: parent.right
         Text{
             anchors.centerIn: parent
             font.pixelSize: 20
             text: "M▾"
             color: "white"
+        }
+        onFunctionButtonClicked:
+        {
+            closeAllWindows()
+            memoryListWindows.visible = true
         }
     }
 
@@ -166,13 +178,120 @@ Window {
     }
 
     Rectangle{
-        id: memoryList
+        id: memoryListWindows
         height: mainWindow.height/2 + 5
-        color: "red"
+        color: "#222222"
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        visible: false
+        visible: true
+
+        Component {
+            id: memoryComponent
+            Rectangle {
+                width: memoryListWindows.width ; height: 100
+                color: "#222222" //containMouse? "#373737" : "#222222"
+                //property alias containMouse : memoryComponentMouse.containsMouse
+                Text
+                {
+                    x: parent.width - 50
+                    y: parent.height/5
+                    text: model.name;
+                    font.pixelSize: 20
+                    color: "white"
+                }
+
+                    Rectangle{
+                        id: memorySubtractButton
+                        width: 48; height: 40
+                        color: memorySubtractButtonMouse.containsMouse? "#4d4d4d" : parent.color
+                        anchors.bottom: parent.bottom
+                        anchors.right: parent.right
+                        anchors.rightMargin: 15
+                        border.width: 2
+                        border.color: "white"
+                        Text{
+                            color: "white"
+                            anchors.centerIn: parent
+                            text: "M-"
+                            font.pixelSize: 20
+                        }
+                        MouseArea{
+                            id: memorySubtractButtonMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: _memoryModel.onMemorySubtractButtonClicked(model.index, calculator.mainResult)
+                        }
+                    }
+
+                    Rectangle{
+                        id: memoryAddButton
+                        width: 48; height: 40
+                        color: memoryAddButtonMouse.containsMouse? "#4d4d4d" : parent.color
+                        anchors.verticalCenter: memorySubtractButton.verticalCenter
+                        anchors.right: memorySubtractButton.left
+                        anchors.rightMargin: 15
+                        border.width: 2
+                        border.color: "white"
+                        Text{
+                            color: "white"
+                            anchors.centerIn: parent
+                            text: "M+"
+                            font.pixelSize: 20
+                        }
+                        MouseArea{
+                            id: memoryAddButtonMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: _memoryModel.onMemoryAddButtonClicked(model.index,calculator.mainResult)
+                        }
+                    }
+
+                    Rectangle{
+                        id: memoryClearButton
+                        width: 48; height: 40
+                        color: memoryClearButtonMouse.containsMouse? "#4d4d4d" : parent.color
+                        anchors.verticalCenter: memorySubtractButton.verticalCenter
+                        anchors.right: memoryAddButton.left
+                        anchors.rightMargin: 15
+                        border.width: 2
+                        border.color: "white"
+                        Text{
+                            color: "white"
+                            anchors.centerIn: parent
+                            text: "MC"
+                            font.pixelSize: 20
+                        }
+                        MouseArea{
+                            id: memoryClearButtonMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: _memoryModel.removeData(model.index)
+                        }
+                    }
+//                MouseArea{
+//                    id: memoryComponentMouse
+//                    anchors.fill: parent
+//                    hoverEnabled: true
+//                    onDoubleClicked: _memoryModel.removeData(model.index) // test
+//                }
+            }
+        }
+
+        ListView {
+            anchors.fill: parent
+            model: _memoryModel
+            delegate: memoryComponent
+            clip: true
+            spacing: 20
+        }
+
+//        Rectangle{
+//            height: 40
+//            anchors.left: parent.left
+//            anchors.right: parent.right
+//            anchors.bottom: parent.bottom
+//        }
     }
 
     Rectangle{
@@ -182,5 +301,16 @@ Window {
         color: "blue"
         anchors.bottom: parent.bottom
         visible: false
+        Text{
+            text: "This feature is  currently under development"
+            anchors.centerIn: parent
+            font.pixelSize: 20
+        }
+    }
+    function closeAllWindows()
+    {
+        fullKeypadWindows.visible = false;
+        memoryListWindows.visible = false;
+        bitTogglingKeypadWindows.visible = false;
     }
 }

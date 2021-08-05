@@ -9,5 +9,6 @@
         <file>icon/bitToggleIcon.png</file>
         <file>icon/bitToggleIcon_blue.png</file>
         <file>icon/fullKeypadIcon_blue.png</file>
+        <file>icon/ClearAllMemoryListIcon.png</file>
     </qresource>
 </RCC>

@@ -18,7 +18,6 @@ class Calculator: public QObject
     Q_PROPERTY(QString octResult READ octResult WRITE setOctResult NOTIFY octResultChanged)
     Q_PROPERTY(QString binResult READ binResult WRITE setBinResult NOTIFY binResultChanged)
 
-
 signals:
     void mainResultChanged(QString mainResult);
     void historyExpressionChanged(QString mainResult);
@@ -35,23 +34,19 @@ public:
     QString convertSymbolCharacterToOperator(QString _symbolCharacter);
     QString calculate(QString _expression);
     static Calculator* getInstance();
-    //Q_INVOKABLE void onKeypadButtonClicked(QString _element);
     Q_INVOKABLE void onDigitKeypadButtonCliked(QString _element);
     Q_INVOKABLE void onOperatorKeypadButtonClicked(QString _element);
-
+    Q_INVOKABLE void onChangeSizeOfDataFunctionButtonClicked();
+    Q_INVOKABLE void onDeleteButtonClicked(QString _element);
     QString mainResult() const;
     void setMainResult(const QString &_mainResult);
     QString historyExpression() const;
     void setHistoryExpression(const QString &_historyExpression);
     QString sizeOfData() const;
     void setSizeOfData(const QString &_sizeOfData);
-
-    Q_INVOKABLE void onChangeSizeOfDataFunctionButtonClicked();
-
     QString convertDecimalToBinary(QString _decimalString);
     QString convertBinaryToHex(QString _binaryString);
     QString convertBinaryToOctal(QString _binaryString);
-
     QString hexResult();
     void setHexResult(QString _hexResult);
     QString decResult();
@@ -60,10 +55,7 @@ public:
     void setOctResult(QString _octResult);
     QString binResult();
     void setBinResult(QString _binResult);
-
     void setSubResult(QString _decimalString);
-
-    Q_INVOKABLE void onDeleteButtonClicked(QString _element);
     void setResult(QString _decimalString);
 private:
     Calculator();

@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 Rectangle{
     width: parent.width
-    property int subResultHeight: 35
+    property int subResultHeight: 38
     property int subResultTextSize: 18
     property string hexResultValue : "0"
     property string decResultValue : "0"
@@ -118,6 +118,7 @@ Rectangle{
             hoverEnabled: true
             onClicked: {
                 hightLight.anchors.verticalCenter = decResult.verticalCenter
+                currentInputType = "DEC"
             }
         }
     }
@@ -160,7 +161,7 @@ Rectangle{
     Rectangle{
         id: binResult
         width: parent.width
-        height: 35
+        height: subResultHeight
         color: binMouse.containsMouse?"#737373" : parent.color
         anchors.left: parent.left
         anchors.bottom: parent.bottom
@@ -200,6 +201,6 @@ Rectangle{
         width: 5
         height: 20
         color: "#0178D7"
-        visible: false
+        visible: true
     }
 }

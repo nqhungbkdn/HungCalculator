@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     QQmlContext *m_qmlContext = engine.rootContext();
-    m_qmlContext->setContextProperty("calculator", Calculator::getInstance());
+    m_qmlContext->setContextProperty("_calculator", Calculator::getInstance());
     m_qmlContext->setContextProperty("_memoryModel", &memoryModel);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())

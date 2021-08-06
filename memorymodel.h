@@ -22,11 +22,12 @@ public:
     QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const override;
     QHash<int, QByteArray> roleNames() const override;
 public slots:
-    void duplicateData(int row);
-    void removeData(int row);
-    void addNewData(int _data);
+    void onMemoryClearButtonClicked(int row);
+    void onMemoryStoreFunctionButtonClicked(int _data);
     void onMemoryAddButtonClicked(int row,int _data);
     void onMemorySubtractButtonClicked(int _row,int _data);
+    void onClearAllMemoryButtonClicked();
+    int modelCount();
 private: //members
     QVector< Data > m_data;
 };

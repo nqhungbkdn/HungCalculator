@@ -1,6 +1,5 @@
 #include "calculator.h"
 
-
 Calculator::Calculator()
 {
     m_lastOperator ="+";
@@ -348,6 +347,16 @@ void Calculator::onOperatorKeypadButtonClicked(QString _element)
     {
         if(!m_expressionForCalculate.isEmpty()) // Not empty
         {
+            if(m_expressionForCalculate.back() == ")")
+            {
+                while (m_expressionForCalculate.back() != "(") {
+                    m_expressionForCalculate.chop(1);
+                    m_expressionForDisplay.chop(1);
+                }
+                setHistoryExpression(m_expressionForDisplay);
+                return;
+            }
+
             if(m_expressionForCalculate.back().isNumber())
             {
                 QString lastNumber;
@@ -718,10 +727,6 @@ void Calculator::setSubResult(QString _decimalString)
     setOctResult(convertBinaryToOctal(binaryString));
 }
 
-void Calculator::connectSignalsToSlots()
-{
-    connect(this, SIGNAL(mainResultChanged(m_mainResult)), this, SLOT(setSubResult()));
-}
 
 void Calculator::onDeleteButtonClicked(QString _element)
 {

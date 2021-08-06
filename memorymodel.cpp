@@ -2,9 +2,6 @@
 
 MemoryModel::MemoryModel(QObject *parent) : QAbstractListModel(parent)
 {
-    m_data << Data(1)
-           <<Data(2)
-          <<Data(3);
 }
 
 int MemoryModel::rowCount( const QModelIndex& parent) const
@@ -35,20 +32,8 @@ QHash<int, QByteArray> MemoryModel::roleNames() const
     return mapping;
 }
 
-void MemoryModel::duplicateData(int row)
-{
-    if (row < 0 || row >= m_data.count())
-        return;
 
-    const Data data = m_data[row];
-    const int rowOfInsert = row + 1;
-
-    beginInsertRows(QModelIndex(), rowOfInsert, rowOfInsert);
-    m_data.insert(rowOfInsert, data);
-    endInsertRows();
-}
-
-void MemoryModel::removeData(int row)
+void MemoryModel::onMemoryClearButtonClicked(int row)
 {
     if (row < 0 || row >= m_data.count())
         return;
@@ -58,7 +43,7 @@ void MemoryModel::removeData(int row)
     endRemoveRows();
 }
 
-void MemoryModel::addNewData(int _data)
+void MemoryModel::onMemoryStoreFunctionButtonClicked(int _data)
 {
     const Data data = _data;
     const int rowOfInsert = m_data.count();
@@ -89,4 +74,16 @@ void MemoryModel::onMemorySubtractButtonClicked(int _row, int _data)
     beginInsertRows(QModelIndex(), _row, _row);
     m_data.insert(_row, currentData);
     endInsertRows();
+}
+
+void MemoryModel::onClearAllMemoryButtonClicked()
+{
+    beginResetModel();
+    m_data.clear();
+    endResetModel();
+}
+
+int MemoryModel::modelCount()
+{
+    return m_data.count();
 }

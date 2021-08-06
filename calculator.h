@@ -63,8 +63,6 @@ public:
 
     void setSubResult(QString _decimalString);
 
-    void connectSignalsToSlots();
-
     Q_INVOKABLE void onDeleteButtonClicked(QString _element);
     void setResult(QString _decimalString);
 private:
